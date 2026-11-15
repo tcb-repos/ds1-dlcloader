@@ -63,18 +63,20 @@ ffmpeg, used to read the console audio, is included, so there's nothing else to 
 5. If you have both console versions of a pack, choose which one to use.
 6. Click **Convert**.
 
-The packs go to `<game>\dlc\<pack>\`, and the loader DLL is installed as `<game>\dinput8.dll`. Start the game normally; the DLC items are at the Store.
+The packs go to `<game>\dlc\<pack>\`, and the loader DLL is installed as `<game>\dinput8.dll` (or as `version.dll`, see Compatibility). Start the game normally; the DLC items are at the Store.
 
 The first run reads the game's own files once to build an index, which later runs reuse.
 
 ### Compatibility
 
 - **[DeadSpaceFixes](https://github.com/seamusduncmcgrath/DeadSpace2008Fixes)** works alongside the DLC Loader (it uses `xinput1_3.dll`). Tested with 1.8.0.
-- **Another `dinput8.dll` mod:** only one `dinput8.dll` can be used. The DLC Loader asks before replacing it, keeps the old file as `dinput8.dll.bak`, and passes DirectInput calls on to `dinput8_next.dll` if one is present.
+- **DSVR (Dead Space VR mod)** works with the DLC Loader: the DLC suits and weapons work in VR (tested with DSVR 1.3). DSVR uses `dinput8.dll` itself, so the DLC Loader installs its loader DLL as `version.dll` instead. Install DSVR first, then run the DLC Loader on the same game folder.
+- **Note:** DeadSpaceFixes and DSVR don't work together, so use one or the other. The DLC Loader works with either.
+- **Another `dinput8.dll` mod:** the same applies. The loader DLL goes in as `version.dll`, and both mods load. Only if `version.dll` is taken by another mod as well does the DLC Loader ask to replace `dinput8.dll`, keeping the old file as `dinput8.dll.bak`.
 
 ### Removing it
 
-Delete `<game>\dlc\`, `<game>\dinput8.dll` and `<game>\dlcloader.log`, plus `dlcloader.ini` if you made one. Rename `dinput8.dll.bak` back to `dinput8.dll` if there is one. Saves that used DLC items may show them missing afterwards.
+Delete `<game>\dlc\`, the loader DLL (`<game>\dinput8.dll`, or `<game>\version.dll` if it was installed under that name) and `<game>\dlcloader.log`, plus `dlcloader.ini` if you made one. Rename `dinput8.dll.bak` back to `dinput8.dll` if there is one. Saves that used DLC items may show them missing afterwards.
 
 ## Troubleshooting
 
@@ -82,7 +84,7 @@ Delete `<game>\dlc\`, `<game>\dinput8.dll` and `<game>\dlcloader.log`, plus `dlc
 - **No DLC at the Store:** check `<game>\dlcloader.log`. It lists the packs the loader found, and says if the exe version isn't supported.
 - **`dlcloader.ini`** (optional, in the game folder):
   - `[dlc] Enabled=0` keeps the loader DLL but loads no DLC.
-  - `[profile] Dir=name` keeps saves and settings in `<game>\name\`.
+  - `[profile] Dir=name` keeps saves and settings in `<game>\name\`. Don't use it with DSVR, which writes the game's normal settings file.
   - `[log] Files=1` logs more detail to `dlcloader.log`.
 
 ## How it works
@@ -94,7 +96,7 @@ Delete `<game>\dlc\`, `<game>\dinput8.dll` and `<game>\dlcloader.log`, plus `dlc
   - text tables
 
   It also renumbers store and slot IDs when packs clash. Format details come from comparing the console files with the PC game's own data.
-- **The loader DLL** (C++, a `dinput8.dll` proxy) feeds each pack's `.store` file to the PC exe's built-in DLC parser. The game's own DLC stream manager then loads the pack's streams. It also adds a safety check to the exe's weapon-removal code, for when a DLC weapon is sold or removed from the inventory.
+- **The loader DLL** (C++, loaded by the game as `dinput8.dll` or `version.dll`, and passing those calls on to Windows) feeds each pack's `.store` file to the PC exe's built-in DLC parser. The game's own DLC stream manager then loads the pack's streams. It also adds a safety check to the exe's weapon-removal code, for when a DLC weapon is sold or removed from the inventory.
 
 ## Building from source
 

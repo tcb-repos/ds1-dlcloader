@@ -316,31 +316,52 @@ public class DlcPackages {
     }
 
     // ------------------------------------------------------------------ loader
-    enum LoaderState { NOT_SHIPPED, NONE, SAME, OURS_OLDER, OTHER }
+    // The loader DLL is installed as dinput8.dll. If another mod already is dinput8.dll (for example the DSVR VR
+    // mod, which must keep that name), it is installed as version.dll instead: the same DLL exports both sets of
+    // functions and passes the calls on to the real Windows DLL.
+    enum LoaderState { NOT_SHIPPED, NONE, SAME, OURS_OLDER, BESIDE_OTHER, BLOCKED }
 
-    /** The release loader shipped with the converter: <tools>\..\loader\dinput8.dll. */
+    /** The release loader shipped with the DLC Loader: <tools>\..\loader\dinput8.dll. */
     static Path shippedLoader() { return StrConvert.toolsDir().toAbsolutePath().normalize().getParent().resolve("loader").resolve("dinput8.dll"); }
 
-    static LoaderState loaderState(Path game) throws IOException {
-        Path src = shippedLoader(), dst = game.resolve("dinput8.dll");
-        if (!Files.isRegularFile(src)) return LoaderState.NOT_SHIPPED;
-        if (!Files.exists(dst)) return LoaderState.NONE;
-        byte[] a = Files.readAllBytes(src), b = Files.readAllBytes(dst);
-        if (Arrays.equals(a, b)) return LoaderState.SAME;
-        return new String(b, java.nio.charset.StandardCharsets.ISO_8859_1).contains("dlcloader starting") ? LoaderState.OURS_OLDER : LoaderState.OTHER;
+    static boolean isOurLoader(Path f) throws IOException {
+        return Files.isRegularFile(f) && new String(Files.readAllBytes(f), java.nio.charset.StandardCharsets.ISO_8859_1).contains("dlcloader starting");
     }
 
-    /** Copies the loader into the game folder. Another program's dinput8.dll is kept as dinput8.dll.bak. */
-    static void installLoader(Path game, PrintStream log) throws IOException {
-        Path dst = game.resolve("dinput8.dll");
+    /** Where the loader goes (or already is) in this game folder; null if both names belong to other mods. */
+    static Path loaderTarget(Path game) throws IOException {
+        Path di = game.resolve("dinput8.dll"), ver = game.resolve("version.dll");
+        if (isOurLoader(ver)) return ver;
+        if (!Files.exists(di) || isOurLoader(di)) return di;
+        if (!Files.exists(ver)) return ver;
+        return null;
+    }
+
+    static LoaderState loaderState(Path game) throws IOException {
+        if (!Files.isRegularFile(shippedLoader())) return LoaderState.NOT_SHIPPED;
+        Path dst = loaderTarget(game);
+        if (dst == null) return LoaderState.BLOCKED;
+        if (!Files.exists(dst)) return dst.getFileName().toString().equals("version.dll") ? LoaderState.BESIDE_OTHER : LoaderState.NONE;
+        return Arrays.equals(Files.readAllBytes(shippedLoader()), Files.readAllBytes(dst)) ? LoaderState.SAME : LoaderState.OURS_OLDER;
+    }
+
+    /** Copies the loader into the game folder. If both dinput8.dll and version.dll belong to other mods, the other
+     *  dinput8.dll is replaced only when replaceOther is set, and kept as dinput8.dll.bak. */
+    static void installLoader(Path game, PrintStream log, boolean replaceOther) throws IOException {
         LoaderState st = loaderState(game);
+        Path dst = loaderTarget(game);
         switch (st) {
             case NOT_SHIPPED -> log.println("The loader DLL (loader\\dinput8.dll) is missing from the DLC Loader folder; not installed.");
-            case SAME -> log.println("Loader DLL already installed.");
-            case OTHER -> {
-                Path bak = game.resolve("dinput8.dll.bak");
-                Files.copy(dst, bak, StandardCopyOption.REPLACE_EXISTING);
+            case SAME -> log.println("Loader DLL already installed (" + dst.getFileName() + ").");
+            case BESIDE_OTHER -> {
                 Files.copy(shippedLoader(), dst, StandardCopyOption.REPLACE_EXISTING);
+                log.println("Another mod already uses dinput8.dll, so the loader DLL was installed as version.dll: " + dst);
+            }
+            case BLOCKED -> {
+                if (!replaceOther) { log.println("Loader DLL not installed: dinput8.dll and version.dll both belong to other mods."); return; }
+                Path di = game.resolve("dinput8.dll"), bak = game.resolve("dinput8.dll.bak");
+                Files.copy(di, bak, StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(shippedLoader(), di, StandardCopyOption.REPLACE_EXISTING);
                 log.println("Installed the loader DLL. The previous dinput8.dll (another mod) was saved as " + bak.getFileName());
             }
             default -> { Files.copy(shippedLoader(), dst, StandardCopyOption.REPLACE_EXISTING); log.println("Installed the loader DLL: " + dst); }

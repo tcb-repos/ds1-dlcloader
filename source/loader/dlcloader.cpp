@@ -590,6 +590,43 @@ static void Init()
          reinterpret_cast<void**>(&g_origGetFileAttributesExA), "GetFileAttributesExA");
 }
 
+// ---- version.dll proxy ---------------------------------------------------------------------------
+// The same DLL can be installed as version.dll (the exe imports VERSION.dll too) when another mod already is
+// dinput8.dll. The DSVR VR mod, for example, must stay dinput8.dll because its core DLL imports functions from it
+// by that name. Each export jumps straight to the system version.dll, so no signatures are needed.
+static FARPROC g_ver[17];
+static const char* const VER_NAMES[17] = {
+    "GetFileVersionInfoA", "GetFileVersionInfoByHandle", "GetFileVersionInfoExA", "GetFileVersionInfoExW",
+    "GetFileVersionInfoSizeA", "GetFileVersionInfoSizeExA", "GetFileVersionInfoSizeExW", "GetFileVersionInfoSizeW",
+    "GetFileVersionInfoW", "VerFindFileA", "VerFindFileW", "VerInstallFileA", "VerInstallFileW",
+    "VerLanguageNameA", "VerLanguageNameW", "VerQueryValueA", "VerQueryValueW" };
+
+static bool LoadedAs(HINSTANCE self, const char* name)
+{
+    char path[MAX_PATH];
+    GetModuleFileNameA(self, path, MAX_PATH);
+    const char* base = strrchr(path, '\\');
+    return _stricmp(base ? base + 1 : path, name) == 0;
+}
+
+static void InitVersionProxy()
+{
+    char path[MAX_PATH];
+    GetSystemDirectoryA(path, MAX_PATH);
+    strcat(path, "\\version.dll");
+    HMODULE real = LoadLibraryA(path);
+    for (int i = 0; i < 17; ++i) g_ver[i] = real ? GetProcAddress(real, VER_NAMES[i]) : nullptr;
+    Log("Loaded as version.dll: calls go to %s (%s)", path, real ? "ok" : "FAILED");
+}
+
+#define VER_THUNK(i, name) extern "C" __declspec(naked) void Proxy_##name() { __asm { jmp dword ptr [g_ver + i * 4] } }
+VER_THUNK(0, GetFileVersionInfoA)       VER_THUNK(1, GetFileVersionInfoByHandle) VER_THUNK(2, GetFileVersionInfoExA)
+VER_THUNK(3, GetFileVersionInfoExW)     VER_THUNK(4, GetFileVersionInfoSizeA)    VER_THUNK(5, GetFileVersionInfoSizeExA)
+VER_THUNK(6, GetFileVersionInfoSizeExW) VER_THUNK(7, GetFileVersionInfoSizeW)    VER_THUNK(8, GetFileVersionInfoW)
+VER_THUNK(9, VerFindFileA)              VER_THUNK(10, VerFindFileW)              VER_THUNK(11, VerInstallFileA)
+VER_THUNK(12, VerInstallFileW)          VER_THUNK(13, VerLanguageNameA)          VER_THUNK(14, VerLanguageNameW)
+VER_THUNK(15, VerQueryValueA)           VER_THUNK(16, VerQueryValueW)
+
 // ---- dinput8 proxy -------------------------------------------------------------------------------
 static HMODULE g_realDinput;
 
@@ -640,8 +677,18 @@ BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID)
         char logPath[MAX_PATH];
         snprintf(logPath, sizeof logPath, "%s\\dlcloader.log", g_gameDir);
         g_log = _fsopen(logPath, "w", _SH_DENYWR);
+        if (LoadedAs(inst, "version.dll")) InitVersionProxy();
         // The hooks only patch code; nothing here waits on another thread, so this is safe under the loader lock.
         Init();
+        // Another dinput8 mod renamed dinput8_next.dll (for example the DSVR VR mod) expects to start with the game,
+        // as it would as dinput8.dll. Load it now, not at the game's first DirectInput call, which comes later or
+        // never (DeadSpaceFixes patches DirectInput out). The game would load its dinput8 at this point anyway.
+        char next[MAX_PATH];
+        snprintf(next, sizeof next, "%s\\dinput8_next.dll", g_gameDir);
+        if (GetFileAttributesA(next) != INVALID_FILE_ATTRIBUTES) {
+            RealProc("DirectInput8Create");
+            Log("dinput8_next.dll loaded at startup: %s", g_realDinput ? "ok" : "FAILED");
+        }
     }
     return TRUE;
 }

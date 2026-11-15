@@ -19,7 +19,7 @@ import javax.swing.border.EmptyBorder;
 public class DlcLoaderGui {
     static final Preferences PREFS = Preferences.userRoot().node("deadspace-dlc-loader");
 
-    static final String VERSION = "1.0.0";
+    static final String VERSION = "1.0.1";
     static final String AUTHOR = "teeceebee (tcb-repos)";
     JFrame frame = new JFrame("Dead Space DLC Loader " + VERSION);
     JTextField game = new JTextField(PREFS.get("game", ""));
@@ -29,7 +29,7 @@ public class DlcLoaderGui {
     JRadioButton prefer360 = new JRadioButton("Xbox 360"), preferPs3 = new JRadioButton("PS3");
     JTextField ffmpeg = new JTextField();
     JCheckBox skip = new JCheckBox("Leave out parts that can't be converted yet (the pack may not work in game)");
-    JCheckBox loader = new JCheckBox("Install the loader DLL (dinput8.dll) into the game folder", PREFS.getBoolean("loader", true));
+    JCheckBox loader = new JCheckBox("Install the loader DLL into the game folder (as dinput8.dll, or version.dll if another mod uses dinput8.dll)", PREFS.getBoolean("loader", true));
     JButton convert = new JButton("Convert");
     JProgressBar progress = new JProgressBar();
     JTextArea log = new JTextArea(14, 80);
@@ -215,9 +215,9 @@ public class DlcLoaderGui {
             try {
                 DlcPackages.LoaderState st = DlcPackages.loaderState(gameDir);
                 if (st == DlcPackages.LoaderState.NOT_SHIPPED) { message("The loader DLL (loader\\dinput8.dll) is missing from the DLC Loader folder. Untick \"Install the loader DLL\" to convert anyway."); return; }
-                if (st == DlcPackages.LoaderState.OTHER && JOptionPane.showConfirmDialog(frame,
-                        "The game folder already has a dinput8.dll from another mod (for example an ASI loader or another DLC loader).\n"
-                        + "Only one dinput8.dll can be used. Replace it with this loader DLL? The old file is kept as dinput8.dll.bak.",
+                if (st == DlcPackages.LoaderState.BLOCKED && JOptionPane.showConfirmDialog(frame,
+                        "The game folder already has a dinput8.dll and a version.dll from other mods, and the loader DLL needs one of those names.\n"
+                        + "Replace the other dinput8.dll with this loader DLL? The old file is kept as dinput8.dll.bak.",
                         "Dead Space DLC Loader", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION) {
                     installLoader = false;
                 }
@@ -240,7 +240,7 @@ public class DlcLoaderGui {
                     List<String> failed = DlcPackages.convert(packs, gameDir, gameDir, skipIt, out, (d, t, w) ->
                         SwingUtilities.invokeLater(() -> { progress.setMaximum(Math.max(1, t)); progress.setValue(d); progress.setString(w); }));
                     int ok = packs.size() - failed.size();
-                    if (doLoader && ok > 0) { out.println(); DlcPackages.installLoader(gameDir, out); }
+                    if (doLoader && ok > 0) { out.println(); DlcPackages.installLoader(gameDir, out, true); }
                     return ok + " of " + packs.size() + " packs converted into " + gameDir.resolve("dlc")
                         + (failed.isEmpty() ? "." : ".\nNot converted (unsupported formats): " + String.join(", ", failed))
                         + (doLoader ? "" : "\n\nThe game also needs the loader DLL (dinput8.dll) to load them.");
