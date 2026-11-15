@@ -1,0 +1,14 @@
+# Built files: these go in the release zip, not the repo
+*.jar
+*.class
+*.dll
+*.exe
+*.pdb
+*.lib
+*.exp
+*.obj
+source/loader/out/
+# Caches and logs the program writes
+tools/cache/
+dlcloader.log
+*.part

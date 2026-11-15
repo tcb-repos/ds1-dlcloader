@@ -1,0 +1,25 @@
+# layout(0x1C):shader(0x2C)	hashA	hashB	first-pass copies	copied params name#k   (learned from PC materials by Material.java learn)
+00000000:21edf0a1	00000000	21edf0a1	0	colorMapSampler#0,tintColor#0
+00000000:e3d227d2	0e155d33	4dcdc310	0	AmbLightAmbOcclIntensityFacingRatio#0,OcclusionTexSampler#0,bumpDiffLgtSpecModShinnyness#0,colorTex2Sampler#0,colorTexSampler#0,disIntenA_disIntenB_Altitude_AlphaLayer2#0,facingRatioDelta_AlphaDistortDelta_UVRange#0,gDistortionVsParam#0
+264add01:166cf6c1	0e155d33	526e365c	0	LightMapSampler#0,SelfIllumTexSampler#0,g_Sampler#0,g_blinkParams#0
+264add01:19f881e5	0e155d33	19f881e5	0	g_GlossMapSampler#0,g_NormalMapSampler#0,g_Sampler#0,g_SpecularExponent#0
+264add01:453827fb	0e155d33	453827fb	0	g_GlossMapSampler#0,g_NormalMapSampler#0,g_Sampler#0,kD#0,specIntensity#0,specPower#0,useParticleColor#0
+264add01:64f8d752	0e155d33	64f8d752	0	g_Sampler#0
+264add01:8890d2c1	0e155d33	2e222315	0	LightMapSampler#0,g_Sampler#0
+264add01:8a7cdf31	0e155d33	54100af8	0	colorTexSampler#0
+264add01:91948478	0e155d33	91948478	0	AmbLightAmbOcclIntensityFacingRatio#0,EnvironmentMapSampler#0,bumpDiffLgtSpecModShinnyness#0,colorTexSampler#0
+264add01:9b0aa972	0e155d33	54100af8	0	colorTexSampler#0
+264add01:a4817b46	0e155d33	a4817b46	0	animTexA#0,animTexB#0,camFadeDistance#0,edgeFallOff#0,fadeDistance#0,uvRotAB#0,uvScaleAB#0,uvSpeedAB#0
+264add01:b1c3edef	7707570c	b1c3edef	6	AmbLightAmbOcclIntensityFacingRatio#0,OcclusionTexSampler#0,Shinnyness#0,g_UVRotationOverride#0,g_materialNormalMapScale#0,normalSampler#0,AmbLightAmbOcclIntensityFacingRatio#1,OcclusionTexSampler#1,SpecEnvMapSampler#0,SpecularTexSampler#0,bumpDiffLgtSpecModShinnyness#0,colorTexSampler#0,g_UVRotationOverride#1,g_eyePSParams#0
+264add01:cb15f0bd	0e155d33	cb15f0bd	0	AoMapSampler#0,LightMapSampler#0,g_GlossMapSampler#0,g_Sampler#0,g_SpecularExponent#0,g_flashlightOverlayEmissive#0
+264add01:d231eea0	0e155d33	a863b878	0	LightMapSampler#0,g_Sampler#0
+264add01:e3d227d2	0e155d33	4dcdc310	0	AmbLightAmbOcclIntensityFacingRatio#0,OcclusionTexSampler#0,bumpDiffLgtSpecModShinnyness#0,colorTex2Sampler#0,colorTexSampler#0,disIntenA_disIntenB_Altitude_AlphaLayer2#0,facingRatioDelta_AlphaDistortDelta_UVRange#0,gDistortionVsParam#0
+264add01:ea6c665b	0e155d33	ea6c665b	0	AmbLightAmbOcclIntensityFacingRatio#0,EnvironmentCubeSampler#0,bumpDiffLgtSpecModShinnyness#0,colorTexSampler#0
+363a388f:ac818809	f758d559	ac818809	5	AmbLightAmbOcclIntensityFacingRatio#0,OcclusionTexSampler#0,Shinnyness#0,g_materialNormalMapScale#0,normalSampler#0,AmbLightAmbOcclIntensityFacingRatio#1,OcclusionTexSampler#1,SelfIllumTexSampler#0,SpecularTexSampler#0,bumpDiffLgtSpecModShinnyness#0,colorTexSampler#0,g_blinkParams#0
+363a388f:c7d5aece	0e155d33	c7d5aece	0	g_Sampler#0,g_SeparationsMap#0,g_glowInfo#0,g_statusBarInfo#0,g_statusTint#0
+76293f54:ac818809	e8d8e59d	ac818809	6	AmbLightAmbOcclIntensityFacingRatio#0,OcclusionTexSampler#0,Shinnyness#0,g_materialBaseMap#0,g_materialNormalMapScale#0,normalSampler#0,AmbLightAmbOcclIntensityFacingRatio#1,OcclusionTexSampler#1,SelfIllumTexSampler#0,SpecularTexSampler#0,bumpDiffLgtSpecModShinnyness#0,colorTexSampler#0,g_blinkParams#0
+876dfaac:166cf6c1	f3122dc1	526e365c	4	g_materialBaseMap#0,g_materialNormalMap#0,g_materialNormalMapScale#0,g_materialSpecMap#0,LightMapSampler#0,SelfIllumTexSampler#0,g_Sampler#0,g_blinkParams#0
+876dfaac:8890d2c1	f3122dc1	2e222315	4	g_materialBaseMap#0,g_materialNormalMap#0,g_materialNormalMapScale#0,g_materialSpecMap#0,LightMapSampler#0,g_Sampler#0
+876dfaac:8a7cdf31	c592c28f	54100af8	6	AmbLightAmbOcclIntensityFacingRatio#0,OcclusionTexSampler#0,Shinnyness#0,g_materialBaseMap#0,g_materialNormalMapScale#0,normalSampler#0,colorTexSampler#0
+876dfaac:9b0aa972	c592c28f	54100af8	6	AmbLightAmbOcclIntensityFacingRatio#0,OcclusionTexSampler#0,Shinnyness#0,g_materialBaseMap#0,g_materialNormalMapScale#0,normalSampler#0,colorTexSampler#0
+876dfaac:d231eea0	f3122dc1	a863b878	4	g_materialBaseMap#0,g_materialNormalMap#0,g_materialNormalMapScale#0,g_materialSpecMap#0,LightMapSampler#0,g_Sampler#0
